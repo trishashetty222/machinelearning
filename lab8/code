@@ -1,0 +1,40 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.preprocessing import LabelEncoder
+sample_data = pd.DataFrame({
+    'cgpa': [7.5, 6.8, 8.1, 6.2, 7.0],
+    'interactiveness': ['yes', 'no', 'yes', 'yes', 'no'],
+    'practical_knowledge': ['good', 'excellent', 'good', 'fair', 'good'],
+    'communication': ['good', 'fair', 'excellent', 'good', 'good'],
+    'job_offer': ['yes', 'no', 'yes', 'no', 'yes']
+})
+label_encoders = {}
+for column in ['interactiveness', 'practical_knowledge', 'communication', 'job_offer']:
+    le = LabelEncoder()
+    sample_data[column] = le.fit_transform(sample_data[column])
+    label_encoders[column] = le
+
+X_sample = sample_data.drop('job_offer', axis=1)
+y_sample = sample_data['job_offer']
+sample_model = DecisionTreeClassifier(max_depth=4, random_state=42)
+sample_model.fit(X_sample, y_sample)
+plt.figure(figsize=(12, 6))
+plot_tree(sample_model, feature_names=X_sample.columns, 
+          class_names=label_encoders['job_offer'].classes_,
+          filled=True, rounded=True)
+plt.title("Decision Tree for Job Offer Prediction")
+plt.show()
+test_sample = pd.DataFrame([{
+    'cgpa': 6.5,
+    'interactiveness': 'yes',
+    'practical_knowledge': 'good',
+    'communication': 'good'
+}])
+for column in ['interactiveness', 'practical_knowledge', 'communication']:
+    test_sample[column] = label_encoders[column].transform(test_sample[column])
+
+prediction = sample_model.predict(test_sample)
+predicted_label = label_encoders['job_offer'].inverse_transform(prediction)
+
+print("Predicted Job Offer for test sample:", predicted_label[0])
